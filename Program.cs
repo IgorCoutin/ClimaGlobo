@@ -30,17 +30,14 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 // });
 
 //AWS
-// builder.Services.AddDefaultAWSOptions(new AWSOptions
-// {
-//     Region = RegionEndpoint.USEast1 // Altere para sua região
-// });
-// builder.Services.AddAWSService<IAmazonDynamoDB>();
+builder.Services.AddDefaultAWSOptions(new AWSOptions
+{
+    Region = RegionEndpoint.USEast1 // Altere para sua região
+});
 
-// Configuração do DbContext
-// builder.Services.AddDbContext<DynamoDbContext>(options =>
-// {
-    
-// });
+builder.Services.AddAWSService<IAmazonDynamoDB>();
+
+builder.Services.AddDbContext<ApplicationDbContext>();
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
