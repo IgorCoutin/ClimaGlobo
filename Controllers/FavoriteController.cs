@@ -12,7 +12,6 @@ public class FavoritesController : ControllerBase
         _favoriteService = favoriteService;
     }
 
-    // Endpoint para adicionar uma cidade/país aos favoritos
     [HttpPost("add")]
     public IActionResult AddFavorite([FromBody] FavoriteDto favorite)
     {
@@ -20,7 +19,6 @@ public class FavoritesController : ControllerBase
         return Ok(new { Success = true, Message = "Cidade e país adicionados aos favoritos." });
     }
 
-    // Endpoint para remover uma cidade/país dos favoritos
     [HttpPost("remove")]
     public IActionResult RemoveFavorite([FromBody] FavoriteDto favorite)
     {
@@ -28,7 +26,6 @@ public class FavoritesController : ControllerBase
         return Ok(new { Success = true, Message = "Cidade e país removidos dos favoritos." });
     }
 
-    // Endpoint para listar todas as cidades/países favoritos
     [HttpGet("list")]
     public IActionResult GetFavorites()
     {
