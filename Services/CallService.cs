@@ -15,8 +15,7 @@ public class CallService
         _apiKey = configuration["OpenWeatherMap:ApiKey"];  
     }
 
-   
-    public async Task<CallDto> GetWeatherDataByCityAsync(string city)
+    public async Task<(WeatherDto, CountryDto)> GetWeatherDataByCityAsync(string city)
     {
         
         var weatherUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={_apiKey}&units=metric";
@@ -26,47 +25,49 @@ public class CallService
             var weatherResponse = await _httpClient.GetAsync(weatherUrl);
             if (!weatherResponse.IsSuccessStatusCode)
             {
-                return null;  
+                return (null, null);  
             }
 
             var weatherContent = await weatherResponse.Content.ReadAsStringAsync();
             if (string.IsNullOrWhiteSpace(weatherContent))
             {
-                return null; 
+                return (null, null);  
             }
 
-            
+           
             var weatherData = JsonConvert.DeserializeObject<WeatherDto>(weatherContent);
 
             
-            var oneCallUrl = $"https://api.openweathermap.org/data/3.0/onecall?lat={weatherData.Coord.Lat}&lon={weatherData.Coord.Lon}&exclude=minutely&appid={_apiKey}&units=metric";
+            var countryCode = weatherData.Sys.Country;
+            var countryUrl = $"https://restcountries.com/v3.1/alpha/{countryCode}";
 
-            var oneCallResponse = await _httpClient.GetAsync(oneCallUrl);
-            if (!oneCallResponse.IsSuccessStatusCode)
+            var countryResponse = await _httpClient.GetAsync(countryUrl);
+            if (!countryResponse.IsSuccessStatusCode)
             {
-                return null;
+                return (weatherData, null);  
             }
 
-            var oneCallContent = await oneCallResponse.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(oneCallContent))
+            var countryContent = await countryResponse.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(countryContent))
             {
-                return null;
+                return (weatherData, null); 
             }
 
-            // Desserializar a resposta do OneCall para o DTO de clima
-            return JsonConvert.DeserializeObject<CallDto>(oneCallContent);
+            
+            var countryData = JsonConvert.DeserializeObject<CountryDto[]>(countryContent);
+
+            
+            return (weatherData, countryData[0]);
         }
         catch (HttpRequestException ex)
         {
-            
             Console.WriteLine($"Erro na requisição: {ex.Message}");
-            return null;
+            return (null, null);
         }
         catch (Exception ex)
         {
-            
             Console.WriteLine($"Erro inesperado: {ex.Message}");
-            return null;
+            return (null, null);
         }
     }
 }

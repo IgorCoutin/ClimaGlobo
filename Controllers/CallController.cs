@@ -1,7 +1,8 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,47 +15,31 @@ public class CallController : ControllerBase
         _callService = callService;
     }
 
-    // Endpoint para obter dados climáticos por nome da cidade
-    [HttpGet("city/{cityName}")]
-    public async Task<IActionResult> GetWeatherByCity(string cityName)
+    [HttpGet("{city}")]
+    public async Task<IActionResult> GetWeatherAndCountryInfo(string city)
     {
-        if (string.IsNullOrWhiteSpace(cityName))
+        var (weatherData, countryData) = await _callService.GetWeatherDataByCityAsync(city);
+
+        if (weatherData == null)
         {
-            return BadRequest(new
-            {
-                Success = false,
-                Message = "O nome da cidade não pode ser vazio."
-            });
+            return NotFound(new { Success = false, Message = $"Não foi possível obter dados do clima para a cidade: {city}" });
         }
 
-        try
+        if (countryData == null)
         {
-            // Chamar o serviço para obter os dados climáticos
-            var callData = await _callService.GetWeatherDataByCityAsync(cityName);
-
-            if (callData == null)
-            {
-                return NotFound(new
-                {
-                    Success = false,
-                    Message = $"Não foi possível obter dados do clima para a cidade: {cityName}"
-                });
-            }
-
             return Ok(new
             {
                 Success = true,
-                Data = callData
+                Weather = weatherData,
+                Message = "Dados do país não disponíveis."
             });
         }
-        catch (Exception ex)
+
+        return Ok(new
         {
-            return StatusCode(500, new
-            {
-                Success = false,
-                Message = "Ocorreu um erro ao processar a solicitação.",
-                Details = ex.Message
-            });
-        }
+            Success = true,
+            Weather = weatherData,
+            Country = countryData
+        });
     }
 }
