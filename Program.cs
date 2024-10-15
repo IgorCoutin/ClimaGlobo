@@ -49,6 +49,16 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // builder.Services.AddScoped<TokenService>();
 
+// Add services to the container.
+builder.Services.AddHttpClient<CallService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openweathermap.org/data/2.5/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddControllers();
+
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme =
@@ -66,7 +76,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SigningKey"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SigningKey"])),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -79,6 +91,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
