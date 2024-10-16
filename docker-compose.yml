@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  minimalapi-service:
+    image: minimalapi-service:${IMAGE_TAG:-latest}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    ports:
+      - "6060:8081"
+      - "6061:8080"
+
+
