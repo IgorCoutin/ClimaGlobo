@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - develop
-  pull_request:
-    branches:
-      - develop
 
 jobs:
   build:
@@ -31,7 +28,7 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
 
   publish_docker_image:
-    if: github.ref == 'refs/heads/develop'
+    if: startsWith(github.ref, 'refs/heads/develop')  # Verificação de branch atualizada
     needs: build
     runs-on: ubuntu-latest
 
@@ -54,7 +51,7 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/minimal-api-dotnet:latest
 
   deploy:
-    if: github.ref == 'refs/heads/develop'
+    if: startsWith(github.ref, 'refs/heads/develop')  # Verificação de branch atualizada
     needs: publish_docker_image
     runs-on: ubuntu-latest
 
